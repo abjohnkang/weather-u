@@ -50,26 +50,34 @@ function App() {
   const [weather, setWeather] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
-    fetchWeather(selectedCollege)
-  }, [selectedCollege])
+    const controller = new AbortController()
+    fetchWeather(selectedCollege, controller.signal)
+    return () => controller.abort()
+  }, [selectedCollege, reloadKey])
 
-  async function fetchWeather(college) {
+  async function fetchWeather(college, signal) {
     setLoading(true)
     setError(null)
     try {
       const tz = encodeURIComponent(college.timezone)
       const url = `https://api.open-meteo.com/v1/forecast?latitude=${college.lat}&longitude=${college.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m&daily=temperature_2m_max,temperature_2m_min,weather_code&temperature_unit=fahrenheit&wind_speed_unit=mph&forecast_days=7&timezone=${tz}`
-      const res = await fetch(url)
+      const res = await fetch(url, { signal })
       if (!res.ok) throw new Error('Failed to fetch weather data')
       const data = await res.json()
       setWeather(data)
     } catch (err) {
+      if (err.name === 'AbortError') return
       setError(err.message)
     } finally {
-      setLoading(false)
+      if (!signal.aborted) setLoading(false)
     }
+  }
+
+  function reload() {
+    setReloadKey(k => k + 1)
   }
 
   function handleCollegeChange(e) {
@@ -85,7 +93,7 @@ function App() {
     return (
       <div className="container">
         <p className="error">Error: {error}</p>
-        <button onClick={() => fetchWeather(selectedCollege)}>Retry</button>
+        <button onClick={reload}>Retry</button>
       </div>
     )
   }
@@ -144,7 +152,7 @@ function App() {
         })}
       </div>
 
-      <button className="refresh-btn" onClick={() => fetchWeather(selectedCollege)}>Refresh</button>
+      <button className="refresh-btn" onClick={reload}>Refresh</button>
     </div>
   )
 }
