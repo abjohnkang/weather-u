@@ -171,6 +171,27 @@ h2 {
   font-weight: 500;
 }
 
+.feels-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  padding: 0.6rem 1rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 0.95rem;
+}
+
+.hint-icon {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.hint-text {
+  color: #ccc;
+}
+
 .forecast {
   display: flex;
   gap: 0.5rem;
@@ -245,6 +266,14 @@ h2 {
   .forecast-day {
     background: rgba(0, 0, 0, 0.03);
     border-color: rgba(0, 0, 0, 0.1);
+  }
+
+  .feels-hint {
+    background: rgba(0, 0, 0, 0.05);
+  }
+
+  .hint-text {
+    color: #444;
   }
 
   .refresh-btn {

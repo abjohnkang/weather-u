@@ -52,6 +52,29 @@ function toDisplayTemp(fahrenheit, unit) {
   return Math.round(value)
 }
 
+// A short, practical hint from the apparent ("feels like") temperature in °F,
+// with a nudge for active precipitation. Keeps the advice campus-friendly.
+function getFeelsLikeHint(apparentF, code) {
+  let hint
+  if (apparentF < 20) hint = { icon: '🧊', text: 'Bitter cold — bundle up' }
+  else if (apparentF < 32) hint = { icon: '🧤', text: 'Freezing — heavy coat and gloves' }
+  else if (apparentF < 45) hint = { icon: '🧥', text: 'Cold — bring a warm jacket' }
+  else if (apparentF < 58) hint = { icon: '🧥', text: 'Chilly — a light jacket helps' }
+  else if (apparentF < 72) hint = { icon: '😎', text: 'Mild — great weather to be out' }
+  else if (apparentF < 82) hint = { icon: '👕', text: 'Warm — dress light' }
+  else if (apparentF < 92) hint = { icon: '💧', text: 'Hot — stay hydrated' }
+  else hint = { icon: '🥵', text: 'Scorching — limit time in the sun' }
+
+  // Weather-code overrides for active precipitation take priority.
+  if (code >= 71 && code <= 77) return { icon: '🧣', text: 'Snow — bundle up and watch your step' }
+  if (code >= 85 && code <= 86) return { icon: '❄️', text: 'Snow showers — grab a warm coat' }
+  if (code >= 95) return { icon: '⛈️', text: 'Thunderstorms — best to stay inside' }
+  if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) {
+    return { icon: '☔', text: 'Rain — grab an umbrella' }
+  }
+  return hint
+}
+
 function App() {
   const [selectedCollege, setSelectedCollege] = useState(COLLEGES[0])
   const [weather, setWeather] = useState(null)
@@ -113,6 +136,7 @@ function App() {
   const current = weather.current
   const daily = weather.daily
   const info = getWeatherInfo(current.weather_code)
+  const hint = getFeelsLikeHint(current.apparent_temperature, current.weather_code)
 
   return (
     <div className="container">
@@ -150,6 +174,10 @@ function App() {
             <span className="label">Wind</span>
             <span className="value">{Math.round(current.wind_speed_10m)} mph</span>
           </div>
+        </div>
+        <div className="feels-hint">
+          <span className="hint-icon">{hint.icon}</span>
+          <span className="hint-text">{hint.text}</span>
         </div>
       </div>
 
