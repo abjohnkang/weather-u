@@ -45,18 +45,29 @@ function getWeatherInfo(code) {
   return WMO_CODES[code] || { description: 'Unknown', icon: '❓' }
 }
 
+// API is always fetched in °F; convert for display so the toggle needs no refetch.
+function toDisplayTemp(fahrenheit, unit) {
+  const value = unit === 'C' ? (fahrenheit - 32) * (5 / 9) : fahrenheit
+  return Math.round(value)
+}
+
 function App() {
   const [selectedCollege, setSelectedCollege] = useState(COLLEGES[0])
   const [weather, setWeather] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [reloadKey, setReloadKey] = useState(0)
+  const [unit, setUnit] = useState(() => localStorage.getItem('unit') || 'F')
 
   useEffect(() => {
     const controller = new AbortController()
     fetchWeather(selectedCollege, controller.signal)
     return () => controller.abort()
   }, [selectedCollege, reloadKey])
+
+  useEffect(() => {
+    localStorage.setItem('unit', unit)
+  }, [unit])
 
   async function fetchWeather(college, signal) {
     setLoading(true)
@@ -104,24 +115,31 @@ function App() {
 
   return (
     <div className="container">
-      <div className="college-selector">
+      <div className="controls">
         <select value={selectedCollege.name} onChange={handleCollegeChange}>
           {COLLEGES.map(c => (
             <option key={c.name} value={c.name}>{c.name}</option>
           ))}
         </select>
+        <button
+          className="unit-toggle"
+          onClick={() => setUnit(u => (u === 'F' ? 'C' : 'F'))}
+          aria-label="Toggle temperature unit"
+        >
+          °{unit}
+        </button>
       </div>
       <h1>{selectedCollege.name} Weather</h1>
       <p className="subtitle">{selectedCollege.location}</p>
 
       <div className="current-weather">
         <div className="weather-icon">{info.icon}</div>
-        <div className="temperature">{Math.round(current.temperature_2m)}°F</div>
+        <div className="temperature">{toDisplayTemp(current.temperature_2m, unit)}°{unit}</div>
         <div className="description">{info.description}</div>
         <div className="details">
           <div className="detail">
             <span className="label">Feels like</span>
-            <span className="value">{Math.round(current.apparent_temperature)}°F</span>
+            <span className="value">{toDisplayTemp(current.apparent_temperature, unit)}°{unit}</span>
           </div>
           <div className="detail">
             <span className="label">Humidity</span>
@@ -144,8 +162,8 @@ function App() {
               <div className="day-name">{i === 0 ? 'Today' : dayName}</div>
               <div className="day-icon">{dayInfo.icon}</div>
               <div className="day-temps">
-                <span className="high">{Math.round(daily.temperature_2m_max[i])}°</span>
-                <span className="low">{Math.round(daily.temperature_2m_min[i])}°</span>
+                <span className="high">{toDisplayTemp(daily.temperature_2m_max[i], unit)}°</span>
+                <span className="low">{toDisplayTemp(daily.temperature_2m_min[i], unit)}°</span>
               </div>
             </div>
           )

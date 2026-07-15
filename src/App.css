@@ -5,11 +5,15 @@
   text-align: center;
 }
 
-.college-selector {
+.controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
   margin-bottom: 1rem;
 }
 
-.college-selector select {
+.controls select {
   padding: 0.5rem 1rem;
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -18,6 +22,22 @@
   font-size: 1rem;
   cursor: pointer;
   appearance: auto;
+}
+
+.unit-toggle {
+  padding: 0.5rem 0.9rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  color: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-width: 3rem;
+}
+
+.unit-toggle:hover {
+  background: rgba(255, 255, 255, 0.12);
 }
 
 h1 {
@@ -157,9 +177,14 @@ h2 {
 }
 
 @media (prefers-color-scheme: light) {
-  .college-selector select {
+  .controls select,
+  .unit-toggle {
     border-color: rgba(0, 0, 0, 0.2);
     background: rgba(0, 0, 0, 0.03);
+  }
+
+  .unit-toggle:hover {
+    background: rgba(0, 0, 0, 0.06);
   }
 
   .current-weather,
