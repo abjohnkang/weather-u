@@ -35,9 +35,18 @@ export default function TempChart({ hourly, currentTime, unit, toDisplay }) {
   const temps = points.map(p => toDisplay(p.temp, unit))
   const min = Math.min(...temps)
   const max = Math.max(...temps)
-  // Pad the domain so the line never rides the top/bottom edge.
-  const lo = min - 2
-  const hi = max + 2
+  // Give the domain generous headroom and enforce a minimum span so a mild day
+  // (e.g. 71–90) reads as a gentle curve, not a spike pinned to the edges.
+  const MIN_SPAN = unit === 'C' ? 12 : 22
+  const range = max - min
+  const pad = Math.max(4, range * 0.4)
+  let lo = min - pad
+  let hi = max + pad
+  if (hi - lo < MIN_SPAN) {
+    const mid = (lo + hi) / 2
+    lo = mid - MIN_SPAN / 2
+    hi = mid + MIN_SPAN / 2
+  }
   const span = hi - lo || 1
 
   const plotW = VIEW_W - PAD.left - PAD.right
@@ -46,11 +55,26 @@ export default function TempChart({ hourly, currentTime, unit, toDisplay }) {
   const y = t => PAD.top + (1 - (t - lo) / span) * plotH
 
   const coords = temps.map((t, i) => ({ x: x(i), y: y(t), t, iso: points[i].time }))
-  const linePath = coords.map((c, i) => `${i === 0 ? 'M' : 'L'}${c.x},${c.y}`).join(' ')
-  const areaPath =
-    `M${coords[0].x},${y(lo)} ` +
-    coords.map(c => `L${c.x},${c.y}`).join(' ') +
-    ` L${coords[coords.length - 1].x},${y(lo)} Z`
+  // Smooth the line with a Catmull-Rom → cubic-Bézier spline.
+  const curve = coords
+    .slice(1)
+    .map((p2, idx) => {
+      const i = idx + 1
+      const p0 = coords[i - 2] || coords[i - 1]
+      const p1 = coords[i - 1]
+      const p3 = coords[i + 1] || p2
+      const cp1x = p1.x + (p2.x - p0.x) / 6
+      const cp1y = p1.y + (p2.y - p0.y) / 6
+      const cp2x = p2.x - (p3.x - p1.x) / 6
+      const cp2y = p2.y - (p3.y - p1.y) / 6
+      return `C${cp1x},${cp1y} ${cp2x},${cp2y} ${p2.x},${p2.y}`
+    })
+    .join(' ')
+  const first = coords[0]
+  const last = coords[coords.length - 1]
+  const base = y(lo)
+  const linePath = `M${first.x},${first.y} ${curve}`
+  const areaPath = `M${first.x},${base} L${first.x},${first.y} ${curve} L${last.x},${base} Z`
 
   const minIdx = temps.indexOf(min)
   const maxIdx = temps.indexOf(max)
