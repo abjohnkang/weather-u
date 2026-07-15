@@ -63,6 +63,60 @@ h2 {
   color: #888;
 }
 
+/* 24-hour temperature chart */
+.temp-chart {
+  --chart-line: #ff8c42;
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+
+.temp-chart .temp-line {
+  stroke: var(--chart-line);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.temp-chart .grid {
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-width: 1;
+}
+
+.temp-chart .axis-label {
+  fill: #888;
+  font-size: 11px;
+}
+
+.temp-chart .peak-label {
+  fill: var(--chart-line);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.temp-chart .peak-label.low {
+  fill: #888;
+}
+
+.temp-chart .crosshair {
+  stroke: rgba(255, 255, 255, 0.25);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+.temp-chart .hover-dot {
+  fill: var(--chart-line);
+  stroke: #1a1a1a;
+  stroke-width: 2;
+}
+
+.temp-chart .tooltip-text {
+  fill: currentColor;
+  font-size: 12px;
+  font-weight: 600;
+}
+
 .error {
   color: #e74c3c;
 }
@@ -201,5 +255,22 @@ h2 {
   .refresh-btn:hover {
     background: rgba(0, 0, 0, 0.06);
     border-color: rgba(0, 0, 0, 0.3);
+  }
+
+  .temp-chart {
+    /* darker orange for adequate contrast on a light surface */
+    --chart-line: #e8590c;
+  }
+
+  .temp-chart .grid {
+    stroke: rgba(0, 0, 0, 0.08);
+  }
+
+  .temp-chart .crosshair {
+    stroke: rgba(0, 0, 0, 0.25);
+  }
+
+  .temp-chart .hover-dot {
+    stroke: #ffffff;
   }
 }
